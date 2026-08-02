@@ -39,9 +39,9 @@ jobs:                   #git hub acction stage stared here
        - name: Deploy Containers on Docker Host
          run: |
     #Remove Old Containers if running and images 
-         docker stop test || true
-         docker rm test || true 
-         docker rmi balu7979/github-actions:gapp-v1 || true
+           docker stop test || true
+           docker rm test || true 
+           docker rmi balu7979/github-actions:gapp-v1 || true
     #Pulling Latest DC (gapp-v1) Images
-         docker pull balu7979/github-actions:gapp-v1
-         docker run -d --name app-v1 -p 8081:80 balu7979/github-actions:gapp-v1
+           docker pull balu7979/github-actions:gapp-v1
+           docker run -d --name app-v1 -p 8081:80 balu7979/github-actions:gapp-v1
