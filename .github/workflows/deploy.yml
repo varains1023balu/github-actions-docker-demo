@@ -35,13 +35,13 @@ jobs:                   #git hub acction stage stared here
     needs: build-and-push   #this job will run after only witch job (like:- depens on)
     runs-on: self-hosted    ##job will run on where git-hub hosted/Local-servers???
 
-    steps: 
+    steps:
       - name: Deploy Containers on Docker Host
         run: |
-    #Remove Old Containers if running and images 
+          #Remove Old Containers if running and images
           docker stop test || true
-          docker rm test || true 
+          docker rm test || true
           docker rmi balu7979/github-actions:gapp-v1 || true
-    #Pulling Latest DC (gapp-v1) Images
+          #Pulling Latest DC (gapp-v1) Images
           docker pull balu7979/github-actions:gapp-v1
           docker run -d --name app-v1 -p 8081:80 balu7979/github-actions:gapp-v1
