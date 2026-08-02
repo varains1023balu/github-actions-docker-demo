@@ -25,7 +25,7 @@ jobs:                   #git hub acction stage stared here
         uses: docker/build-push-action@v5   #To Build & Push the Image to DC-HUB
         with:
           context: .        #Build happes based on Current (Root_Folder) Folder 
-          file: ./DockerFile #witch DC file to build DC-Image
+          file: ./Dockerfile #witch DC file to build DC-Image
           build-args: HTML_FILE=v1.html #variable to take the right web-page
           push: true                    #after build image need to push DC-HUB true/false
           tags: balu7979/github-actions:gapp-v1 #name of the Docker Image 
@@ -36,12 +36,12 @@ jobs:                   #git hub acction stage stared here
     runs-on: self-hosted    ##job will run on where git-hub hosted/Local-servers???
 
     steps: 
-       - name: Deploy Containers on Docker Host
-         run: |
+      - name: Deploy Containers on Docker Host
+        run: |
     #Remove Old Containers if running and images 
-           docker stop test || true
-           docker rm test || true 
-           docker rmi balu7979/github-actions:gapp-v1 || true
+          docker stop test || true
+          docker rm test || true 
+          docker rmi balu7979/github-actions:gapp-v1 || true
     #Pulling Latest DC (gapp-v1) Images
-           docker pull balu7979/github-actions:gapp-v1
-           docker run -d --name app-v1 -p 8081:80 balu7979/github-actions:gapp-v1
+          docker pull balu7979/github-actions:gapp-v1
+          docker run -d --name app-v1 -p 8081:80 balu7979/github-actions:gapp-v1
