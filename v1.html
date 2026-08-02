@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NodeOps.store - Enterprise Cloud Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #0b0f19; color: #e2e8f0; }
+        
+        /* Top Banner */
+        .ver-bar { background: #6366f1; color: white; text-align: center; padding: 8px; font-weight: 600; font-size: 14px; }
+        
+        /* Navigation & Header */
+        header { background-color: #111827; padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1f2937; gap: 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #6366f1; }
+        .logo span { color: #38bdf8; }
+        
+        /* Search Box (Without Button) */
+        .search-box { display: flex; width: 40%; }
+        .search-box input { width: 100%; padding: 10px 14px; border: 1px solid #374151; background: #1f2937; color: white; border-radius: 6px; outline: none; }
+        .search-box input:focus { border-color: #6366f1; }
+        .cart-status { background: #1f2937; border: 1px solid #374151; padding: 8px 16px; border-radius: 6px; color: #34d399; font-weight: 600; }
+
+        /* Main Grid */
+        .main-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
+        
+        /* Product Cards */
+        .p-card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; }
+        .p-card:hover { border-color: #6366f1; transform: translateY(-3px); }
+        
+        /* Real Local Image Holder */
+        .img-container { width: 100%; height: 180px; border-radius: 8px; margin-bottom: 15px; background: #030712; border: 1px solid #1f2937; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .p-title { font-size: 18px; font-weight: 600; color: #f9fafb; margin: 0 0 10px 0; }
+        .specs { font-size: 13px; color: #9ca3af; margin-bottom: 15px; line-height: 1.6; }
+        .price { font-size: 22px; color: #34d399; font-weight: 700; margin-bottom: 15px; }
+        
+        .btn-group { display: flex; gap: 10px; }
+        .action-btn { flex: 1; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; }
+        .cart-btn { background: #1f2937; color: #e2e8f0; border: 1px solid #374151; }
+        .cart-btn:hover { background: #374151; }
+        .deploy-btn { background: #6366f1; color: white; }
+        .deploy-btn:hover { background: #4f46e5; }
+
+        /* Pagination */
+        .pagination-bar { display: flex; justify-content: center; gap: 10px; margin-top: 40px; }
+        .page-btn { background: #1f2937; color: #e2e8f0; border: 1px solid #374151; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .page-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
+
+        /* System Audit Logs */
+        .terminal-logs { background: #030712; border: 1px solid #1f2937; border-radius: 8px; padding: 15px; margin-top: 40px; font-family: monospace; font-size: 13px; color: #38bdf8; height: 100px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+    <!-- VERSION BANNER (Updated to v1.0.0) -->
+    <div class="ver-bar">🟢 NodeOps.store Production Platform - Version v1.0.0 (Local Storage Engine)</div>
+
+    <!-- HEADER WITH SEARCH BAR & CART -->
+    <header>
+        <div class="logo">NodeOps<span>.store</span></div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search Dell, HPE, Cisco, Gigabyte..." oninput="handleSearch()" onkeyup="if(event.key==='Enter') handleSearch()">
+        </div>
+        <div class="cart-status">🛒 Cart: <span id="cartCount">0</span> Items</div>
+    </header>
+
+    <div class="main-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Bare-Metal Compute Nodes (Page <span id="currentPageDisplay">1</span> / 2)</h2>
+        </div>
+
+        <!-- PRODUCT GRID -->
+        <div class="product-grid" id="productGrid"></div>
+
+        <!-- PAGINATION BAR -->
+        <div class="pagination-bar">
+            <button class="page-btn active" id="p1Btn" onclick="renderProducts(1)">Page 1</button>
+            <button class="page-btn" id="p2Btn" onclick="renderProducts(2)">Page 2</button>
+        </div>
+
+        <!-- LOGS -->
+        <div class="terminal-logs">
+            <div style="color: #6b7280; margin-bottom: 5px;">[SYSTEM AUDIT LOGS]</div>
+            <div id="logStream">> Local Static Server mounted. Loading images from /images/ directory...</div>
+        </div>
+    </div>
+
+    <script>
+        // Mapped to local files in /var/www/html/web/images/
+        const allProducts = [
+            // PAGE 1
+            { id: 1, name: "Dell PowerEdge R750", cpu: "2x Intel Xeon Gold 6330", ram: "128GB DDR4", storage: "2x 960GB NVMe", price: "$4,850", img: "./images/dell-r750.jpg" },
+            { id: 2, name: "HPE ProLiant DL380 Gen10", cpu: "2x AMD EPYC 7543", ram: "256GB DDR4", storage: "4x 1.92TB SAS", price: "$6,200", img: "./images/hpe-dl380.jpg" },
+            { id: 3, name: "Cisco UCS C220 M5 Rack", cpu: "2x Intel Xeon Silver 4210R", ram: "64GB DDR4", storage: "2x 480GB SSD", price: "$3,400", img: "./images/cisco-c220.jpg" },
+            { id: 4, name: "Lenovo ThinkSystem SR650", cpu: "2x Intel Xeon Gold 5218", ram: "128GB DDR4", storage: "2x 1.92TB NVMe", price: "$4,100", img: "./images/lenovo-sr650.jpg" },
+            { id: 5, name: "Supermicro Ultra Server", cpu: "2x AMD EPYC 7763", ram: "512GB DDR4", storage: "8x 3.84TB NVMe", price: "$9,500", img: "./images/supermicro-ultra.jpg" },
+            // PAGE 2
+            { id: 6, name: "Dell PowerEdge R650 1U", cpu: "2x Intel Xeon Silver 4314", ram: "64GB DDR4", storage: "2x 960GB NVMe", price: "$3,900", img: "./images/dell-r650.jpg" },
+            { id: 7, name: "HPE ProLiant DL360 Gen10", cpu: "2x Intel Xeon Gold 6248R", ram: "128GB DDR4", storage: "4x 960GB SAS", price: "$5,100", img: "./images/hpe-dl360.jpg" },
+            { id: 8, name: "ASUS RS720-E10 High-Density", cpu: "2x Intel Xeon Platinum", ram: "256GB DDR4", storage: "4x 1.92TB NVMe", price: "$7,300", img: "./images/asus-rs720.jpg" },
+            { id: 9, name: "Gigabyte GPU Server G292", cpu: "2x AMD EPYC + 4x A100 GPU", ram: "512GB DDR4", storage: "4x 3.84TB NVMe", price: "$24,000", img: "./images/gigabyte-g292.jpg" },
+            { id: 10, name: "Fujitsu PRIMERGY RX2540", cpu: "2x Intel Xeon Silver 4214R", ram: "96GB DDR4", storage: "2x 1.92TB SSD", price: "$3,650", img: "./images/fujitsu-rx2540.jpg" }
+        ];
+
+        let cartCount = 0;
+
+        function renderProducts(page) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            
+            const start = (page - 1) * 5;
+            const currentItems = allProducts.slice(start, start + 5);
+
+            currentItems.forEach(p => {
+                grid.innerHTML += `
+                    <div class="p-card">
+                        <div>
+                            <div class="img-container">
+                                <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null; this.src='./images/dell-r750.jpg';">
+                            </div>
+                            <h3 class="p-title">${p.name}</h3>
+                            <div class="specs">
+                                • CPU: ${p.cpu}<br>
+                                • RAM: ${p.ram}<br>
+                                • Storage: ${p.storage}
+                            </div>
+                            <div class="price">${p.price}</div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="action-btn cart-btn" onclick="addToCart('${p.name}')">+ Cart</button>
+                            <button class="action-btn deploy-btn" onclick="deployNow('${p.name}')">Deploy</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('currentPageDisplay').innerText = page;
+            document.getElementById('p1Btn').classList.toggle('active', page === 1);
+            document.getElementById('p2Btn').classList.toggle('active', page === 2);
+            logMsg(`Loaded Page ${page} hardware nodes.`);
+        }
+
+        function addToCart(name) {
+            cartCount++;
+            document.getElementById('cartCount').innerText = cartCount;
+            logMsg(`Added to Cart: ${name}`);
+        }
+
+        function deployNow(name) {
+            logMsg(`Provisioning Node: ${name}`);
+            alert(`Provisioning requested for ${name}`);
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if(!query) {
+                renderProducts(1);
+                return;
+            }
+            const matches = allProducts.filter(p => p.name.toLowerCase().includes(query));
+            logMsg(`Search for '${query}' found ${matches.length} result(s).`);
+            
+            // Render searched products directly
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            if(matches.length === 0) {
+                grid.innerHTML = '<div style="color: #9ca3af; grid-column: 1/-1;">No servers found matching your query.</div>';
+                return;
+            }
+            matches.forEach(p => {
+                grid.innerHTML += `
+                    <div class="p-card">
+                        <div>
+                            <div class="img-container">
+                                <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null; this.src='./images/dell-r750.jpg';">
+                            </div>
+                            <h3 class="p-title">${p.name}</h3>
+                            <div class="specs">
+                                • CPU: ${p.cpu}<br>
+                                • RAM: ${p.ram}<br>
+                                • Storage: ${p.storage}
+                            </div>
+                            <div class="price">${p.price}</div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="action-btn cart-btn" onclick="addToCart('${p.name}')">+ Cart</button>
+                            <button class="action-btn deploy-btn" onclick="deployNow('${p.name}')">Deploy</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function logMsg(msg) {
+            const log = document.getElementById('logStream');
+            log.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${msg}`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        renderProducts(1);
+    </script>
+</body>
+</html>
