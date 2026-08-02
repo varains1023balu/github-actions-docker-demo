@@ -8,41 +8,40 @@ on:                     #trigger
 
 jobs:                   #git hub acction stage stared here
   build-and-push:       #Custome name of the 1st JOB
-  runs-on: ubuntu-latest #this job will run on where git-hub hosted/Local-servers???
+    runs-on: ubuntu-latest #this job will run on where git-hub hosted/Local-servers???
 
 #Real Job Now
-
-  steps:                  #jobs under this 
-    - name: Checkout Code
-      uses: actions/checkout@v4 #to download the code into git-hub hosted servers
+    steps:                  #jobs under this 
+      - name: Checkout Code
+        uses: actions/checkout@v4 #to download the code into git-hub hosted servers
 
 #2nd Docker-Hub Login
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3  #Login in to Docker-Hub using docker tool
-      with:                         #Inpust to the tool 
-        username: ${{ secrets.DOCKERHUB_USERNAME }}  not harded coded the values use Git-Hub Secrets
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build & Push gapp-v1
-      uses: docker/build-push-action@v5   #To Build & Push the Image to DC-HUB
-      with:
-        context: .        #Build happes based on Current (Root_Folder) Folder 
-        file: ./DockerFile #witch DC file to build DC-Image
-        build-args: HTML_FILE=v1.html #variable to take the right web-page
-        push: true                    #after build image need to push DC-HUB true/false
-        tags: balu7979/github-actions:gapp-v1 #name of the Docker Image 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3  #Login in to Docker-Hub using docker tool
+        with:                         #Inpust to the tool 
+          username: ${{ secrets.DOCKERHUB_USERNAME }}  not harded coded the values use Git-Hub Secrets
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & Push gapp-v1
+        uses: docker/build-push-action@v5   #To Build & Push the Image to DC-HUB
+        with:
+          context: .        #Build happes based on Current (Root_Folder) Folder 
+          file: ./DockerFile #witch DC file to build DC-Image
+          build-args: HTML_FILE=v1.html #variable to take the right web-page
+          push: true                    #after build image need to push DC-HUB true/false
+          tags: balu7979/github-actions:gapp-v1 #name of the Docker Image 
       
 #JOB 2: Deploy on Self-Hosted DOCKER VM
   deploy-local: #Custome name of the 2nd JOB
-     needs: build-and-push   #this job will run after only witch job (like:- depens on)
-     runs-on: self-hosted    ##job will run on where git-hub hosted/Local-servers???
+    needs: build-and-push   #this job will run after only witch job (like:- depens on)
+    runs-on: self-hosted    ##job will run on where git-hub hosted/Local-servers???
 
-  steps: 
-   - name: Deploy Containers on Docker Host
-     run: |
-     #Remove Old Containers if running and images 
-       docker stop test || true
-       docker rm test || true 
-       docker rmi balu7979/github-actions:gapp-v1 || true
-     #Pulling Latest DC (gapp-v1) Images
-       docker pull balu7979/github-actions:gapp-v1
-       docker run -d --name app-v1 -p 8081:80 balu7979/github-actions:gapp-v1
+    steps: 
+       - name: Deploy Containers on Docker Host
+         run: |
+    #Remove Old Containers if running and images 
+         docker stop test || true
+         docker rm test || true 
+         docker rmi balu7979/github-actions:gapp-v1 || true
+    #Pulling Latest DC (gapp-v1) Images
+         docker pull balu7979/github-actions:gapp-v1
+         docker run -d --name app-v1 -p 8081:80 balu7979/github-actions:gapp-v1
